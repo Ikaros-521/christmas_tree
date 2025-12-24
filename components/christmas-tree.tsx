@@ -90,6 +90,26 @@ export function ChristmasTree({
     isDraggingRef.current = false // 初始设置为false，移动后才设为true
   }
 
+  // 触摸开始：记录偏移并准备拖拽
+  const handleDecorationTouchStart = (e: React.TouchEvent, id: string, currentX: number, currentY: number) => {
+    e.stopPropagation()
+
+    if (!treeRef.current || e.touches.length === 0) return
+
+    const touch = e.touches[0]
+    const rect = treeRef.current.getBoundingClientRect()
+    const offsetX = touch.clientX - rect.left - currentX
+    const offsetY = touch.clientY - rect.top - currentY
+
+    dragStartPositionRef.current = { x: touch.clientX, y: touch.clientY }
+    hasMovedRef.current = false
+
+    setDraggedDecoration(id)
+    setDragOffset({ x: offsetX, y: offsetY })
+    dragOffsetRef.current = { x: offsetX, y: offsetY }
+    isDraggingRef.current = false
+  }
+
   const handleMouseMove = (e: React.MouseEvent) => {
     if (!draggedDecoration || !treeRef.current) return
 
@@ -118,6 +138,33 @@ export function ChristmasTree({
     }
   }
 
+  // 触摸移动：更新位置与拖拽状态
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!draggedDecoration || !treeRef.current || e.touches.length === 0) return
+
+    const touch = e.touches[0]
+
+    if (e.cancelable) e.preventDefault() // 阻止页面滚动，提升拖拽体验
+
+    const deltaX = Math.abs(touch.clientX - dragStartPositionRef.current.x)
+    const deltaY = Math.abs(touch.clientY - dragStartPositionRef.current.y)
+
+    if (deltaX > 5 || deltaY > 5) {
+      isDraggingRef.current = true
+      hasMovedRef.current = true
+    }
+
+    if (isDraggingRef.current) {
+      requestAnimationFrame(() => {
+        if (!treeRef.current || !draggedDecoration) return
+        const rect = treeRef.current.getBoundingClientRect()
+        const x = touch.clientX - rect.left - dragOffsetRef.current.x
+        const y = touch.clientY - rect.top - dragOffsetRef.current.y
+        onDecorationUpdate(draggedDecoration, { x, y })
+      })
+    }
+  }
+
   const handleMouseUp = () => {
     // 如果没有移动且正在拖拽某个装饰品，则认为是点击
     if (!hasMovedRef.current && draggedDecoration) {
@@ -129,6 +176,20 @@ export function ChristmasTree({
       }, 10)
     }
     
+    setDraggedDecoration(null)
+    isDraggingRef.current = false
+    hasMovedRef.current = false
+  }
+
+  // 触摸结束：可能触发点击或结束拖拽
+  const handleTouchEnd = () => {
+    if (!hasMovedRef.current && draggedDecoration) {
+      setTimeout(() => {
+        if (draggedDecoration) {
+          handleDecorationClick(draggedDecoration)
+        }
+      }, 10)
+    }
     setDraggedDecoration(null)
     isDraggingRef.current = false
     hasMovedRef.current = false
@@ -155,14 +216,35 @@ export function ChristmasTree({
       isDraggingRef.current = false
     }
 
+    const handleGlobalTouchMove = (e: TouchEvent) => {
+      if (!draggedDecoration || !treeRef.current || !isDraggingRef.current || e.touches.length === 0) return
+      const touch = e.touches[0]
+      requestAnimationFrame(() => {
+        if (!treeRef.current || !draggedDecoration) return
+        const rect = treeRef.current.getBoundingClientRect()
+        const x = touch.clientX - rect.left - dragOffsetRef.current.x
+        const y = touch.clientY - rect.top - dragOffsetRef.current.y
+        onDecorationUpdate(draggedDecoration, { x, y })
+      })
+    }
+
+    const handleGlobalTouchEnd = () => {
+      setDraggedDecoration(null)
+      isDraggingRef.current = false
+    }
+
     if (draggedDecoration) {
       document.addEventListener('mousemove', handleGlobalMouseMove)
       document.addEventListener('mouseup', handleGlobalMouseUp)
+      document.addEventListener('touchmove', handleGlobalTouchMove, { passive: false })
+      document.addEventListener('touchend', handleGlobalTouchEnd)
     }
 
     return () => {
       document.removeEventListener('mousemove', handleGlobalMouseMove)
       document.removeEventListener('mouseup', handleGlobalMouseUp)
+      document.removeEventListener('touchmove', handleGlobalTouchMove)
+      document.removeEventListener('touchend', handleGlobalTouchEnd)
     }
   }, [draggedDecoration, onDecorationUpdate])
 
@@ -218,6 +300,8 @@ export function ChristmasTree({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
       onClick={handleBackgroundClick}
     >
       <div
@@ -408,6 +492,7 @@ export function ChristmasTree({
               willChange: draggedDecoration === decoration.id ? "transform" : "auto",
             }}
           onMouseDown={(e) => handleDecorationMouseDown(e, decoration.id, decoration.x, decoration.y)}
+          onTouchStart={(e) => handleDecorationTouchStart(e, decoration.id, decoration.x, decoration.y)}
         >
           {decoration.type === "emoji" ? (
             <span className="text-4xl pointer-events-none">{decoration.content}</span>
