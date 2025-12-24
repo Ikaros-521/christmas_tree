@@ -86,8 +86,7 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
         width,
         height,
         style: {
-          paddingTop: `${extraTop}px`,
-          paddingBottom: `${extraBottom}px`,
+          transform: `translateY(${extraTop}px)`,
           backgroundColor: 'transparent',
         },
         filter: (node) => {
