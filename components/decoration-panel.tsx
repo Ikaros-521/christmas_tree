@@ -26,6 +26,8 @@ const PRESET_DECORATIONS = [
   { emoji: "🕯️", label: "蜡烛" },
   { emoji: "❄️", label: "雪花" },
   { emoji: "🎩", label: "礼帽" },
+  { emoji: "🌙", label: "月亮" },
+  { emoji: "⭐", label: "星星" },
 ]
 
 export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelProps) {
