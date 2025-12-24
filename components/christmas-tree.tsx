@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Star, Sparkles } from "lucide-react"
 import { DecorationEditor } from "./decoration-editor"
 
@@ -36,6 +36,8 @@ export function ChristmasTree({
   const [draggedDecoration, setDraggedDecoration] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const treeRef = useRef<HTMLDivElement>(null)
+  const dragOffsetRef = useRef({ x: 0, y: 0 })
+  const isDraggingRef = useRef(false)
 
   const handleOrnamentClick = (id: number) => {
     setClickedOrnaments((prev) => {
@@ -65,32 +67,72 @@ export function ChristmasTree({
   }
 
   const handleDecorationMouseDown = (e: React.MouseEvent, id: string, currentX: number, currentY: number) => {
-    e.preventDefault()
+    // 只阻止事件冒泡，不阻止默认行为
     e.stopPropagation()
 
     if (!treeRef.current) return
 
     const rect = treeRef.current.getBoundingClientRect()
+    const offsetX = e.clientX - rect.left - currentX
+    const offsetY = e.clientY - rect.top - currentY
+    
     setDraggedDecoration(id)
-    setDragOffset({
-      x: e.clientX - rect.left - currentX,
-      y: e.clientY - rect.top - currentY,
-    })
+    setDragOffset({ x: offsetX, y: offsetY })
+    dragOffsetRef.current = { x: offsetX, y: offsetY }
+    isDraggingRef.current = true
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!draggedDecoration || !treeRef.current) return
+    if (!draggedDecoration || !treeRef.current || !isDraggingRef.current) return
 
-    const rect = treeRef.current.getBoundingClientRect()
-    const x = e.clientX - rect.left - dragOffset.x
-    const y = e.clientY - rect.top - dragOffset.y
+    // 使用 requestAnimationFrame 来优化性能
+    requestAnimationFrame(() => {
+      if (!treeRef.current || !draggedDecoration) return
+      
+      const rect = treeRef.current.getBoundingClientRect()
+      const x = e.clientX - rect.left - dragOffsetRef.current.x
+      const y = e.clientY - rect.top - dragOffsetRef.current.y
 
-    onDecorationUpdate(draggedDecoration, { x, y })
+      onDecorationUpdate(draggedDecoration, { x, y })
+    })
   }
 
   const handleMouseUp = () => {
     setDraggedDecoration(null)
+    isDraggingRef.current = false
   }
+
+  // 全局鼠标事件监听，确保拖拽的流畅性
+  useEffect(() => {
+    const handleGlobalMouseMove = (e: MouseEvent) => {
+      if (!draggedDecoration || !treeRef.current || !isDraggingRef.current) return
+
+      requestAnimationFrame(() => {
+        if (!treeRef.current || !draggedDecoration) return
+        
+        const rect = treeRef.current.getBoundingClientRect()
+        const x = e.clientX - rect.left - dragOffsetRef.current.x
+        const y = e.clientY - rect.top - dragOffsetRef.current.y
+
+        onDecorationUpdate(draggedDecoration, { x, y })
+      })
+    }
+
+    const handleGlobalMouseUp = () => {
+      setDraggedDecoration(null)
+      isDraggingRef.current = false
+    }
+
+    if (draggedDecoration) {
+      document.addEventListener('mousemove', handleGlobalMouseMove)
+      document.addEventListener('mouseup', handleGlobalMouseUp)
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleGlobalMouseMove)
+      document.removeEventListener('mouseup', handleGlobalMouseUp)
+    }
+  }, [draggedDecoration, onDecorationUpdate])
 
   const getLightColor = (index: number) => {
     if (lightColor === "rainbow") {
@@ -317,21 +359,23 @@ export function ChristmasTree({
       })}
 
       {decorations.map((decoration) => (
-        <div
-          key={decoration.id}
-          className="absolute z-30 select-none transition-all hover:drop-shadow-lg hover:brightness-110 cursor-move hover:scale-105"
-          style={{
-            left: `${decoration.x}px`,
-            top: `${decoration.y}px`,
-            transform: `rotate(${decoration.rotation}deg) scale(${decoration.scale})`,
-            cursor: draggedDecoration === decoration.id ? "grabbing" : "grab",
-          }}
+          <div
+            key={decoration.id}
+            className={`absolute z-30 select-none hover:drop-shadow-lg hover:brightness-110 hover:scale-105 ${
+              draggedDecoration === decoration.id 
+                ? "cursor-grabbing transition-none" 
+                : "cursor-grab transition-all"
+            }`}
+            style={{
+              left: `${decoration.x}px`,
+              top: `${decoration.y}px`,
+              transform: `rotate(${decoration.rotation}deg) scale(${decoration.scale})`,
+              willChange: draggedDecoration === decoration.id ? "transform" : "auto",
+            }}
           onMouseDown={(e) => handleDecorationMouseDown(e, decoration.id, decoration.x, decoration.y)}
           onClick={(e) => {
-            // 如果没有拖拽，才处理点击事件
-            if (!draggedDecoration) {
-              handleDecorationClick(decoration.id, e)
-            }
+            e.stopPropagation()
+            handleDecorationClick(decoration.id, e)
           }}
         >
           {decoration.type === "emoji" ? (
