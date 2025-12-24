@@ -28,6 +28,7 @@ export default function Home() {
   const [showTitle, setShowTitle] = useState(true)
   const [showSubtitle, setShowSubtitle] = useState(true)
   const [showLights, setShowLights] = useState(true)
+  const [treeStyle, setTreeStyle] = useState<"classic" | "snowy" | "minimal" | "pine">("classic")
 
   const handleAddDecoration = (type: "emoji" | "image", content: string, x?: number, y?: number) => {
     const newDecoration: Decoration = {
@@ -99,6 +100,7 @@ export default function Home() {
               onDecorationUpdate={handleDecorationUpdate}
               onDecorationRemove={handleDecorationRemove}
               treeRef={treeRef}
+              treeStyle={treeStyle}
             />
           </div>
           {showDecorationPanel && (
@@ -114,6 +116,8 @@ export default function Home() {
                 onShowTitleChange={setShowTitle}
                 showSubtitle={showSubtitle}
                 onShowSubtitleChange={setShowSubtitle}
+                treeStyle={treeStyle}
+                onTreeStyleChange={setTreeStyle}
               />
             </div>
           )}

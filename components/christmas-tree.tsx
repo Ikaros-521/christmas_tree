@@ -24,6 +24,7 @@ interface ChristmasTreeProps {
   onDecorationUpdate: (id: string, updates: Partial<Decoration>) => void
   onDecorationRemove: (id: string) => void
   treeRef?: React.RefObject<HTMLDivElement>
+  treeStyle?: "classic" | "snowy" | "minimal" | "pine"
 }
 
 export function ChristmasTree({
@@ -34,6 +35,7 @@ export function ChristmasTree({
   onDecorationUpdate,
   onDecorationRemove,
   treeRef: treeRefProp,
+  treeStyle = "classic",
 }: ChristmasTreeProps) {
   const [clickedOrnaments, setClickedOrnaments] = useState<Set<number>>(new Set())
   const [editingDecoration, setEditingDecoration] = useState<string | null>(null)
@@ -327,108 +329,193 @@ export function ChristmasTree({
       </div>
 
       <div className="absolute inset-0 flex flex-col items-center pt-4">
+        {treeStyle === "pine" && (
+          <>
+            <svg
+              width="420"
+              height="420"
+              viewBox="0 0 420 420"
+              className="filter drop-shadow-md"
+              style={{ filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.35))" }}
+            >
+              <path
+                d="M210 10 C 190 40, 170 55, 160 70 C 150 90, 130 95, 120 110 C 110 130, 90 135, 80 150 C 70 170, 55 180, 50 195 C 45 210, 60 220, 70 235 C 85 250, 95 260, 90 275 C 85 290, 95 300, 110 312 C 130 325, 150 335, 160 345 C 180 360, 190 370, 210 385 C 230 370, 240 360, 260 345 C 270 335, 290 325, 310 312 C 325 300, 335 290, 330 275 C 325 260, 335 250, 350 235 C 360 220, 375 210, 370 195 C 365 180, 350 170, 340 150 C 330 135, 310 130, 300 110 C 290 95, 270 90, 260 70 C 250 55, 230 40, 210 10 Z"
+                fill="#2D5016"
+              />
+              <path
+                d="M210 35 C 195 55, 175 70, 165 85 C 155 100, 135 105, 125 120 C 115 135, 95 140, 85 155 C 75 170, 65 180, 60 195 C 58 205, 66 212, 74 222 C 86 236, 95 245, 92 258 C 90 268, 98 279, 112 290 C 128 302, 148 313, 168 325 C 186 336, 198 346, 210 355 C 222 346, 234 336, 252 325 C 272 313, 292 302, 308 290 C 322 279, 330 268, 328 258 C 325 245, 334 236, 346 222 C 354 212, 362 205, 360 195 C 355 180, 345 170, 335 155 C 325 140, 305 135, 295 120 C 285 105, 265 100, 255 85 C 245 70, 225 55, 210 35 Z"
+                fill="#3D6B1F"
+              />
+            </svg>
+            <div className="relative mt-2 flex justify-center">
+              <div
+                className="w-20 h-24 rounded-md"
+                style={{
+                  background: "linear-gradient(to right, #5D4037, #6D4C41, #5D4037)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.4), inset -2px 0 4px rgba(0,0,0,0.3)",
+                }}
+              />
+            </div>
+          </>
+        )}
         {/* Top section */}
         <div
           className="relative"
           style={{
+            display: treeStyle === "pine" ? "none" : undefined,
             width: 0,
             height: 0,
             borderLeft: "100px solid transparent",
             borderRight: "100px solid transparent",
             borderBottom: "140px solid #2D5016",
-            filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
+            filter: treeStyle === "minimal" ? "none" : "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
           }}
         >
-          <div
-            className="absolute"
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: "95px solid transparent",
-              borderRight: "95px solid transparent",
-              borderBottom: "135px solid #3D6B1F",
-              left: "-95px",
-              top: "2px",
-            }}
-          />
+          {treeStyle !== "minimal" && (
+            <div
+              className="absolute"
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "95px solid transparent",
+                borderRight: "95px solid transparent",
+                borderBottom: "135px solid #3D6B1F",
+                left: "-95px",
+                top: "2px",
+              }}
+            />
+          )}
+          {/* 雪景整体下移：顶层不再加雪帽 */}
         </div>
 
         {/* Second section */}
         <div
           className="relative -mt-6"
           style={{
+            display: treeStyle === "pine" ? "none" : undefined,
             width: 0,
             height: 0,
             borderLeft: "140px solid transparent",
             borderRight: "140px solid transparent",
             borderBottom: "150px solid #2D5016",
-            filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
+            filter: treeStyle === "minimal" ? "none" : "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
           }}
         >
-          <div
-            className="absolute"
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: "135px solid transparent",
-              borderRight: "135px solid transparent",
-              borderBottom: "145px solid #3D6B1F",
-              left: "-135px",
-              top: "2px",
-            }}
-          />
+          {treeStyle !== "minimal" && (
+            <div
+              className="absolute"
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "135px solid transparent",
+                borderRight: "135px solid transparent",
+                borderBottom: "145px solid #3D6B1F",
+                left: "-135px",
+                top: "2px",
+              }}
+            />
+          )}
+          {treeStyle === "snowy" && (
+            <div
+              className="absolute"
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "120px solid transparent",
+                borderRight: "120px solid transparent",
+                borderBottom: "22px solid rgba(255,255,255,0.95)",
+                left: "-120px",
+                top: "6px",
+              }}
+            />
+          )}
         </div>
 
         {/* Third section */}
         <div
           className="relative -mt-6"
           style={{
+            display: treeStyle === "pine" ? "none" : undefined,
             width: 0,
             height: 0,
             borderLeft: "180px solid transparent",
             borderRight: "180px solid transparent",
             borderBottom: "170px solid #2D5016",
-            filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
+            filter: treeStyle === "minimal" ? "none" : "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
           }}
         >
-          <div
-            className="absolute"
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: "175px solid transparent",
-              borderRight: "175px solid transparent",
-              borderBottom: "165px solid #3D6B1F",
-              left: "-175px",
-              top: "2px",
-            }}
-          />
+          {treeStyle !== "minimal" && (
+            <div
+              className="absolute"
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "175px solid transparent",
+                borderRight: "175px solid transparent",
+                borderBottom: "165px solid #3D6B1F",
+                left: "-175px",
+                top: "2px",
+              }}
+            />
+          )}
+          {treeStyle === "snowy" && (
+            <div
+              className="absolute"
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "160px solid transparent",
+                borderRight: "160px solid transparent",
+                borderBottom: "24px solid rgba(255,255,255,0.95)",
+                left: "-160px",
+                top: "6px",
+              }}
+            />
+          )}
         </div>
 
         {/* Bottom section */}
         <div
           className="relative -mt-6"
           style={{
+            display: treeStyle === "pine" ? "none" : undefined,
             width: 0,
             height: 0,
             borderLeft: "220px solid transparent",
             borderRight: "220px solid transparent",
             borderBottom: "180px solid #2D5016",
-            filter: "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
+            filter: treeStyle === "minimal" ? "none" : "drop-shadow(0 4px 8px rgba(0,0,0,0.3))",
           }}
         >
-          <div
-            className="absolute"
-            style={{
-              width: 0,
-              height: 0,
-              borderLeft: "215px solid transparent",
-              borderRight: "215px solid transparent",
-              borderBottom: "175px solid #3D6B1F",
-              left: "-215px",
-              top: "2px",
-            }}
-          />
+          {treeStyle !== "minimal" && (
+            <div
+              className="absolute"
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "215px solid transparent",
+                borderRight: "215px solid transparent",
+                borderBottom: "175px solid #3D6B1F",
+                left: "-215px",
+                top: "2px",
+              }}
+            />
+          )}
+          {treeStyle === "snowy" && (
+            <div
+              className="absolute"
+              style={{
+                width: 0,
+                height: 0,
+                borderLeft: "200px solid transparent",
+                borderRight: "200px solid transparent",
+                borderBottom: "24px solid rgba(255,255,255,0.95)",
+                left: "-200px",
+                top: "6px",
+                zIndex: 5,
+              }}
+            />
+          )}
         </div>
 
         <div className="relative mt-2">

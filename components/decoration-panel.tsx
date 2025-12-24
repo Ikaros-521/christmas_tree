@@ -8,6 +8,13 @@ import { Card } from "@/components/ui/card"
 import { Upload, Download } from "lucide-react"
 import { toPng } from "html-to-image"
 import { Switch } from "@/components/ui/switch"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface DecorationPanelProps {
   onAddDecoration: (type: "emoji" | "image", content: string, x?: number, y?: number) => void
@@ -20,6 +27,8 @@ interface DecorationPanelProps {
   onShowTitleChange: (v: boolean) => void
   showSubtitle: boolean
   onShowSubtitleChange: (v: boolean) => void
+  treeStyle: "classic" | "snowy" | "minimal" | "pine"
+  onTreeStyleChange: (v: "classic" | "snowy" | "minimal" | "pine") => void
 }
 
 const PRESET_DECORATIONS = [
@@ -39,7 +48,7 @@ const PRESET_DECORATIONS = [
   { emoji: "⭐", label: "星星" },
 ]
 
-export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnowChange, showLights, onShowLightsChange, showTitle, onShowTitleChange, showSubtitle, onShowSubtitleChange }: DecorationPanelProps) {
+export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnowChange, showLights, onShowLightsChange, showTitle, onShowTitleChange, showSubtitle, onShowSubtitleChange, treeStyle, onTreeStyleChange }: DecorationPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -191,6 +200,20 @@ export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnow
               <span className="text-sm">副标题（装饰你的专属圣诞树…）</span>
               <Switch checked={showSubtitle} onCheckedChange={onShowSubtitleChange} />
             </div>
+            <div className="space-y-2">
+              <span className="text-sm">圣诞树样式</span>
+              <Select value={treeStyle} onValueChange={(v) => onTreeStyleChange(v as any)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="选择样式" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="classic">经典</SelectItem>
+                  <SelectItem value="snowy">雪景</SelectItem>
+                  <SelectItem value="minimal">极简</SelectItem>
+                  <SelectItem value="pine">自然（松针）</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
 
@@ -282,6 +305,20 @@ export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnow
             <div className="flex items-center justify-between">
               <span className="text-sm">副标题（装饰你的专属圣诞树…）</span>
               <Switch checked={showSubtitle} onCheckedChange={onShowSubtitleChange} />
+            </div>
+            <div className="space-y-2">
+              <span className="text-sm">圣诞树样式</span>
+              <Select value={treeStyle} onValueChange={(v) => onTreeStyleChange(v as any)}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="选择样式" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="classic">经典</SelectItem>
+                  <SelectItem value="snowy">雪景</SelectItem>
+                  <SelectItem value="minimal">极简</SelectItem>
+                  <SelectItem value="pine">自然（松针）</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
