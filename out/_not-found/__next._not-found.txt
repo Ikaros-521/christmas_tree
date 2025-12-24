@@ -1,0 +1,4 @@
+1:"$Sreact.fragment"
+2:I[50487,["/christmas_tree/_next/static/chunks/6b8b48b9b6b1e3ab.js","/christmas_tree/_next/static/chunks/3ba9b5b0e8631e5d.js"],"default"]
+3:I[10043,["/christmas_tree/_next/static/chunks/6b8b48b9b6b1e3ab.js","/christmas_tree/_next/static/chunks/3ba9b5b0e8631e5d.js"],"default"]
+0:{"buildId":"1AXdimiMHMNV-ZVkoYQWY","rsc":["$","$1","c",{"children":[null,["$","$L2",null,{"parallelRouterKey":"children","template":["$","$L3",null,{}]}]]}],"loading":null,"isPartial":false}
