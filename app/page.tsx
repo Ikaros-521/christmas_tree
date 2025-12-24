@@ -90,6 +90,7 @@ export default function Home() {
               decorations={decorations}
               onDecorationUpdate={handleDecorationUpdate}
               onDecorationRemove={handleDecorationRemove}
+              treeRef={treeRef}
             />
           </div>
           {showDecorationPanel && (

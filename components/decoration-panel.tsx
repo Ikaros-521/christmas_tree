@@ -69,30 +69,97 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
         logging: false,
         useCORS: true,
         allowTaint: true,
-        // 忽略可能导致颜色解析问题的元素
-        ignoreElements: ['style', 'script'] as any,
-        // 强制使用简单背景色
-        onclone: (clonedDoc: any) => {
-          // 简化所有背景色为简单格式
-          const walker = document.createTreeWalker(
-            clonedDoc,
-            NodeFilter.SHOW_ELEMENT,
-            null,
-            false
+        // 忽略样式和脚本标签，避免不必要的绘制
+        ignoreElements: (element) => {
+          const tag = element.tagName?.toUpperCase()
+          return tag === 'STYLE' || tag === 'SCRIPT'
+        },
+        // 将复杂颜色空间统一为简单背景，避免导出颜色异常
+        onclone: (clonedDoc: Document) => {
+          const hasUnsupported = (value?: string | null) =>
+            !!value && (value.includes('oklch(') || value.includes('lab('))
+
+          const walker = clonedDoc.createTreeWalker(
+            clonedDoc.body,
+            NodeFilter.SHOW_ELEMENT
           )
-          
-          let node: Node | null
-          while (node = walker.nextNode()) {
-            if (node instanceof HTMLElement) {
-              const computedStyle = window.getComputedStyle(node)
-              const bgColor = computedStyle.backgroundColor
-              if (bgColor && (bgColor.includes('oklch(') || bgColor.includes('lab('))) {
-                node.style.backgroundColor = '#ffffff'
+          let current = walker.nextNode()
+          while (current) {
+            if (current instanceof Element) {
+              const el = current as HTMLElement
+              const cs = clonedDoc.defaultView?.getComputedStyle(el)
+
+              if (cs) {
+                // Normalize backgrounds
+                if (hasUnsupported(cs.backgroundColor)) {
+                  el.style.backgroundColor = '#ffffff'
+                }
+                if (hasUnsupported(cs.backgroundImage)) {
+                  el.style.backgroundImage = 'none'
+                }
+
+                // Normalize text color
+                if (hasUnsupported(cs.color)) {
+                  el.style.color = '#222222'
+                }
+
+                // Normalize borders
+                const borders = [
+                  cs.borderTopColor,
+                  cs.borderRightColor,
+                  cs.borderBottomColor,
+                  cs.borderLeftColor,
+                ]
+                if (borders.some(hasUnsupported)) {
+                  el.style.borderColor = '#dddddd'
+                }
+
+                // Normalize shadows
+                if (hasUnsupported(cs.boxShadow)) {
+                  el.style.boxShadow = 'none'
+                }
+                if (hasUnsupported(cs.textShadow)) {
+                  el.style.textShadow = 'none'
+                }
+
+                // Normalize SVG fill/stroke
+                const fill = (cs as any).fill as string | undefined
+                const stroke = (cs as any).stroke as string | undefined
+                if (hasUnsupported(fill)) {
+                  (el.style as any).fill = '#FACC15' // fallback yellow
+                }
+                if (hasUnsupported(stroke)) {
+                  (el.style as any).stroke = '#FACC15'
+                }
               }
             }
+            current = walker.nextNode()
           }
-          
-          return clonedDoc
+
+          // Override common CSS variables used by the UI to safe hex values
+          const styleEl = clonedDoc.createElement('style')
+          styleEl.textContent = `
+            :root {
+              --background: #ffffff;
+              --foreground: #111111;
+              --card: #ffffff;
+              --card-foreground: #111111;
+              --popover: #ffffff;
+              --popover-foreground: #111111;
+              --border: #e5e7eb;
+              --primary: #10b981;
+              --primary-foreground: #ffffff;
+              --secondary: #f59e0b;
+              --secondary-foreground: #111111;
+              --accent: #22d3ee;
+              --accent-foreground: #111111;
+              --muted: #64748b;
+              --muted-foreground: #111111;
+              --destructive: #ef4444;
+              --destructive-foreground: #ffffff;
+            }
+          `
+          clonedDoc.head.appendChild(styleEl)
         },
       })
 

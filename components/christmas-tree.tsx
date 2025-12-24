@@ -22,6 +22,7 @@ interface ChristmasTreeProps {
   decorations: Decoration[]
   onDecorationUpdate: (id: string, updates: Partial<Decoration>) => void
   onDecorationRemove: (id: string) => void
+  treeRef?: React.RefObject<HTMLDivElement>
 }
 
 export function ChristmasTree({
@@ -30,12 +31,14 @@ export function ChristmasTree({
   decorations,
   onDecorationUpdate,
   onDecorationRemove,
+  treeRef: treeRefProp,
 }: ChristmasTreeProps) {
   const [clickedOrnaments, setClickedOrnaments] = useState<Set<number>>(new Set())
   const [editingDecoration, setEditingDecoration] = useState<string | null>(null)
   const [draggedDecoration, setDraggedDecoration] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
-  const treeRef = useRef<HTMLDivElement>(null)
+  const localTreeRef = useRef<HTMLDivElement>(null)
+  const treeRef = treeRefProp ?? localTreeRef
   const dragOffsetRef = useRef({ x: 0, y: 0 })
   const isDraggingRef = useRef(false)
   const dragStartPositionRef = useRef({ x: 0, y: 0 })
@@ -225,7 +228,10 @@ export function ChristmasTree({
             : "float 3s ease-in-out infinite",
         }}
       >
-        <Star className="w-20 h-20 fill-yellow-300 text-yellow-400 drop-shadow-[0_0_25px_rgba(253,224,71,0.9)]" />
+        <Star
+          className="w-20 h-20 drop-shadow-[0_0_25px_rgba(253,224,71,0.9)]"
+          style={{ fill: "#FDE047", stroke: "#FACC15" }}
+        />
       </div>
 
       <div className="absolute inset-0 flex flex-col items-center pt-4">
