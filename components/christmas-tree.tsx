@@ -307,6 +307,7 @@ export function ChristmasTree({
       onClick={handleBackgroundClick}
     >
       <div
+        data-export-star
         className="absolute -top-12 left-1/2 -translate-x-1/2 z-30"
         style={{
           animation: isPlaying

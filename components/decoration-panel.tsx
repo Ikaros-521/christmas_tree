@@ -6,7 +6,7 @@ import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Upload, Download } from "lucide-react"
-import html2canvas from "html2canvas"
+import { toPng } from "html-to-image"
 
 interface DecorationPanelProps {
   onAddDecoration: (type: "emoji" | "image", content: string, x?: number, y?: number) => void
@@ -62,114 +62,50 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
 
     setIsExporting(true)
     try {
-      // 使用 html2canvas 进行真实的圣诞树截图
-      const canvas = await html2canvas(treeRef.current, {
-        backgroundColor: '#ffffff',
-        scale: 2,
-        logging: false,
-        useCORS: true,
-        allowTaint: true,
-        // 忽略样式和脚本标签，避免不必要的绘制
-        ignoreElements: (element) => {
-          const tag = element.tagName?.toUpperCase()
-          return tag === 'STYLE' || tag === 'SCRIPT'
+      const node = treeRef.current
+      const nodeRect = node.getBoundingClientRect()
+      const starEl = node.querySelector('[data-export-star]') as HTMLElement | null
+      let extraTop = 0
+      if (starEl) {
+        const starRect = starEl.getBoundingClientRect()
+        // 计算星星超出容器顶部的距离，并为光晕额外留白
+        const overflowTop = Math.max(0, nodeRect.top - starRect.top)
+        extraTop = overflowTop + 20 // 为发光效果加 20px 安全边距
+      } else {
+        // 兜底：未知布局时保留适度顶部边距
+        extraTop = 48
+      }
+      const extraBottom = 64 // 底部阴影预留约 24px
+      const width = node.clientWidth
+      const height = node.clientHeight + extraTop + extraBottom
+
+      const dataUrl = await toPng(node, {
+        cacheBust: true,
+        pixelRatio: 2,
+        backgroundColor: 'transparent',
+        width,
+        height,
+        style: {
+          paddingTop: `${extraTop}px`,
+          paddingBottom: `${extraBottom}px`,
+          backgroundColor: 'transparent',
         },
-        // 将复杂颜色空间统一为简单背景，避免导出颜色异常
-        onclone: (clonedDoc: Document) => {
-          const hasUnsupported = (value?: string | null) =>
-            !!value && (value.includes('oklch(') || value.includes('lab('))
-
-          const walker = clonedDoc.createTreeWalker(
-            clonedDoc.body,
-            NodeFilter.SHOW_ELEMENT
-          )
-          let current = walker.nextNode()
-          while (current) {
-            if (current instanceof Element) {
-              const el = current as HTMLElement
-              const cs = clonedDoc.defaultView?.getComputedStyle(el)
-
-              if (cs) {
-                // Normalize backgrounds
-                if (hasUnsupported(cs.backgroundColor)) {
-                  el.style.backgroundColor = '#ffffff'
-                }
-                if (hasUnsupported(cs.backgroundImage)) {
-                  el.style.backgroundImage = 'none'
-                }
-
-                // Normalize text color
-                if (hasUnsupported(cs.color)) {
-                  el.style.color = '#222222'
-                }
-
-                // Normalize borders
-                const borders = [
-                  cs.borderTopColor,
-                  cs.borderRightColor,
-                  cs.borderBottomColor,
-                  cs.borderLeftColor,
-                ]
-                if (borders.some(hasUnsupported)) {
-                  el.style.borderColor = '#dddddd'
-                }
-
-                // Normalize shadows
-                if (hasUnsupported(cs.boxShadow)) {
-                  el.style.boxShadow = 'none'
-                }
-                if (hasUnsupported(cs.textShadow)) {
-                  el.style.textShadow = 'none'
-                }
-
-                // Normalize SVG fill/stroke
-                const fill = (cs as any).fill as string | undefined
-                const stroke = (cs as any).stroke as string | undefined
-                if (hasUnsupported(fill)) {
-                  (el.style as any).fill = '#FACC15' // fallback yellow
-                }
-                if (hasUnsupported(stroke)) {
-                  (el.style as any).stroke = '#FACC15'
-                }
-              }
-            }
-            current = walker.nextNode()
-          }
-
-          // Override common CSS variables used by the UI to safe hex values
-          const styleEl = clonedDoc.createElement('style')
-          styleEl.textContent = `
-            :root {
-              --background: #ffffff;
-              --foreground: #111111;
-              --card: #ffffff;
-              --card-foreground: #111111;
-              --popover: #ffffff;
-              --popover-foreground: #111111;
-              --border: #e5e7eb;
-              --primary: #10b981;
-              --primary-foreground: #ffffff;
-              --secondary: #f59e0b;
-              --secondary-foreground: #111111;
-              --accent: #22d3ee;
-              --accent-foreground: #111111;
-              --muted: #64748b;
-              --muted-foreground: #111111;
-              --destructive: #ef4444;
-              --destructive-foreground: #ffffff;
-            }
-          `
-          clonedDoc.head.appendChild(styleEl)
+        filter: (node) => {
+          const el = node as HTMLElement
+          const tag = el.tagName?.toUpperCase()
+          // 过滤掉脚本/样式标签以及不可见元素
+          const isIgnoredTag = tag === 'STYLE' || tag === 'SCRIPT'
+          const isHidden = el.style && (el.style.display === 'none' || el.style.visibility === 'hidden')
+          return !isIgnoredTag && !isHidden
         },
       })
 
       const link = document.createElement('a')
       link.download = `my-christmas-tree-${Date.now()}.png`
-      link.href = canvas.toDataURL('image/png')
+      link.href = dataUrl
       link.click()
-      
     } catch (error) {
-      console.error("Export failed:", error)
+      console.error('Export failed:', error)
     } finally {
       setIsExporting(false)
     }
