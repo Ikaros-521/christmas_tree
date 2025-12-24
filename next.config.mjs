@@ -10,7 +10,7 @@ const nextConfig = {
   },
   // 解决GitHub Pages路径问题 - 只在生产环境应用assetPrefix
   ...(process.env.NODE_ENV === 'production' && {
-    assetPrefix: '/LX_SKI_Guide',
+    assetPrefix: '/christmas_tree',
   }),
   // 确保静态资源正确导出
   trailingSlash: true,
