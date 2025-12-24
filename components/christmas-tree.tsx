@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState, useRef } from "react"
 import { Star, Sparkles } from "lucide-react"
+import { DecorationEditor } from "./decoration-editor"
 
 interface Decoration {
   id: string
@@ -31,6 +32,7 @@ export function ChristmasTree({
   onDecorationRemove,
 }: ChristmasTreeProps) {
   const [clickedOrnaments, setClickedOrnaments] = useState<Set<number>>(new Set())
+  const [editingDecoration, setEditingDecoration] = useState<string | null>(null)
   const [draggedDecoration, setDraggedDecoration] = useState<string | null>(null)
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const treeRef = useRef<HTMLDivElement>(null)
@@ -45,6 +47,21 @@ export function ChristmasTree({
       }
       return newSet
     })
+  }
+
+  const handleDecorationClick = (id: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation()
+    }
+    setEditingDecoration(id)
+  }
+
+  const handleCloseEditor = () => {
+    setEditingDecoration(null)
+  }
+
+  const handleBackgroundClick = () => {
+    setEditingDecoration(null)
   }
 
   const handleDecorationMouseDown = (e: React.MouseEvent, id: string, currentX: number, currentY: number) => {
@@ -73,27 +90,6 @@ export function ChristmasTree({
 
   const handleMouseUp = () => {
     setDraggedDecoration(null)
-  }
-
-  const handleWheel = (e: React.WheelEvent, id: string, currentScale: number) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const delta = e.deltaY > 0 ? -0.1 : 0.1
-    const newScale = Math.max(0.3, Math.min(3, currentScale + delta))
-    onDecorationUpdate(id, { scale: newScale })
-  }
-
-  const handleDoubleClick = (e: React.MouseEvent, id: string, currentRotation: number) => {
-    e.preventDefault()
-    e.stopPropagation()
-    const newRotation = (currentRotation + 45) % 360
-    onDecorationUpdate(id, { rotation: newRotation })
-  }
-
-  const handleRightClick = (e: React.MouseEvent, id: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-    onDecorationRemove(id)
   }
 
   const getLightColor = (index: number) => {
@@ -148,6 +144,7 @@ export function ChristmasTree({
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onClick={handleBackgroundClick}
     >
       <div
         className="absolute -top-12 left-1/2 -translate-x-1/2 z-30"
@@ -322,7 +319,7 @@ export function ChristmasTree({
       {decorations.map((decoration) => (
         <div
           key={decoration.id}
-          className="absolute z-30 select-none transition-shadow hover:drop-shadow-lg hover:brightness-110"
+          className="absolute z-30 select-none transition-all hover:drop-shadow-lg hover:brightness-110 cursor-move hover:scale-105"
           style={{
             left: `${decoration.x}px`,
             top: `${decoration.y}px`,
@@ -330,9 +327,12 @@ export function ChristmasTree({
             cursor: draggedDecoration === decoration.id ? "grabbing" : "grab",
           }}
           onMouseDown={(e) => handleDecorationMouseDown(e, decoration.id, decoration.x, decoration.y)}
-          onWheel={(e) => handleWheel(e, decoration.id, decoration.scale)}
-          onDoubleClick={(e) => handleDoubleClick(e, decoration.id, decoration.rotation)}
-          onContextMenu={(e) => handleRightClick(e, decoration.id)}
+          onClick={(e) => {
+            // 如果没有拖拽，才处理点击事件
+            if (!draggedDecoration) {
+              handleDecorationClick(decoration.id, e)
+            }
+          }}
         >
           {decoration.type === "emoji" ? (
             <span className="text-4xl pointer-events-none">{decoration.content}</span>
@@ -346,6 +346,21 @@ export function ChristmasTree({
           )}
         </div>
       ))}
+
+      {/* 编辑器弹窗 */}
+      {editingDecoration && (() => {
+        const decoration = decorations.find(d => d.id === editingDecoration)
+        if (!decoration) return null
+
+        return (
+          <DecorationEditor
+            decoration={decoration}
+            onUpdate={onDecorationUpdate}
+            onDelete={onDecorationRemove}
+            onClose={handleCloseEditor}
+          />
+        )
+      })()}
 
       <div
         className="absolute inset-0 -z-10 blur-3xl opacity-30"

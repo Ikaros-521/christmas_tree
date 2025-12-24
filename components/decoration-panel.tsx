@@ -9,7 +9,7 @@ import { Upload, Download } from "lucide-react"
 import html2canvas from "html2canvas"
 
 interface DecorationPanelProps {
-  onAddDecoration: (type: "emoji" | "image", content: string) => void
+  onAddDecoration: (type: "emoji" | "image", content: string, x?: number, y?: number) => void
   treeRef: React.RefObject<HTMLDivElement>
 }
 
@@ -32,6 +32,15 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isExporting, setIsExporting] = useState(false)
 
+  const handleAddDecoration = (type: "emoji" | "image", content: string) => {
+    // 在圣诞树中心位置附近添加装饰品
+    const centerX = 300
+    const centerY = 300
+    const randomOffset = () => (Math.random() - 0.5) * 100 // 随机偏移 ±50px
+    
+    onAddDecoration(type, content, centerX + randomOffset(), centerY + randomOffset())
+  }
+
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -39,7 +48,7 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
     const reader = new FileReader()
     reader.onload = (event) => {
       const imageUrl = event.target?.result as string
-      onAddDecoration("image", imageUrl)
+      handleAddDecoration("image", imageUrl)
     }
     reader.readAsDataURL(file)
   }
@@ -77,7 +86,7 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
               variant="outline"
               size="lg"
               className="h-14 text-3xl hover:scale-110 transition-transform bg-transparent"
-              onClick={() => onAddDecoration("emoji", item.emoji)}
+              onClick={() => handleAddDecoration("emoji", item.emoji)}
               title={item.label}
             >
               {item.emoji}
@@ -109,9 +118,9 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
         <ul className="list-disc list-inside space-y-1 text-xs">
           <li>点击装饰物添加到圣诞树</li>
           <li>拖拽装饰物移动位置</li>
-          <li>滚轮缩放装饰物大小</li>
-          <li>双击旋转装饰物</li>
-          <li>右键删除装饰物</li>
+          <li>点击装饰物打开编辑器</li>
+          <li>使用编辑器调整旋转和缩放</li>
+          <li>点击空白处或×关闭编辑器</li>
         </ul>
       </div>
     </Card>

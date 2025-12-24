@@ -25,13 +25,13 @@ export default function Home() {
   const [decorations, setDecorations] = useState<Decoration[]>([])
   const treeRef = useRef<HTMLDivElement>(null)
 
-  const handleAddDecoration = (type: "emoji" | "image", content: string) => {
+  const handleAddDecoration = (type: "emoji" | "image", content: string, x?: number, y?: number) => {
     const newDecoration: Decoration = {
       id: `decoration-${Date.now()}-${Math.random()}`,
       type,
       content,
-      x: 300,
-      y: 300,
+      x: x || 300,
+      y: y || 300,
       rotation: 0,
       scale: 1,
     }
