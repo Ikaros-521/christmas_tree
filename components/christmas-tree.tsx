@@ -38,6 +38,8 @@ export function ChristmasTree({
   const treeRef = useRef<HTMLDivElement>(null)
   const dragOffsetRef = useRef({ x: 0, y: 0 })
   const isDraggingRef = useRef(false)
+  const dragStartPositionRef = useRef({ x: 0, y: 0 })
+  const hasMovedRef = useRef(false)
 
   const handleOrnamentClick = (id: number) => {
     setClickedOrnaments((prev) => {
@@ -67,7 +69,6 @@ export function ChristmasTree({
   }
 
   const handleDecorationMouseDown = (e: React.MouseEvent, id: string, currentX: number, currentY: number) => {
-    // 只阻止事件冒泡，不阻止默认行为
     e.stopPropagation()
 
     if (!treeRef.current) return
@@ -76,30 +77,58 @@ export function ChristmasTree({
     const offsetX = e.clientX - rect.left - currentX
     const offsetY = e.clientY - rect.top - currentY
     
+    // 记录初始位置，用于检测是否真的在拖拽
+    dragStartPositionRef.current = { x: e.clientX, y: e.clientY }
+    hasMovedRef.current = false
+    
     setDraggedDecoration(id)
     setDragOffset({ x: offsetX, y: offsetY })
     dragOffsetRef.current = { x: offsetX, y: offsetY }
-    isDraggingRef.current = true
+    isDraggingRef.current = false // 初始设置为false，移动后才设为true
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
-    if (!draggedDecoration || !treeRef.current || !isDraggingRef.current) return
+    if (!draggedDecoration || !treeRef.current) return
 
-    // 使用 requestAnimationFrame 来优化性能
-    requestAnimationFrame(() => {
-      if (!treeRef.current || !draggedDecoration) return
-      
-      const rect = treeRef.current.getBoundingClientRect()
-      const x = e.clientX - rect.left - dragOffsetRef.current.x
-      const y = e.clientY - rect.top - dragOffsetRef.current.y
+    // 检测移动距离
+    const deltaX = Math.abs(e.clientX - dragStartPositionRef.current.x)
+    const deltaY = Math.abs(e.clientY - dragStartPositionRef.current.y)
+    
+    // 如果移动距离超过5像素，才认为是拖拽
+    if (deltaX > 5 || deltaY > 5) {
+      isDraggingRef.current = true
+      hasMovedRef.current = true
+    }
 
-      onDecorationUpdate(draggedDecoration, { x, y })
-    })
+    // 只有在确认是拖拽时才更新位置
+    if (isDraggingRef.current) {
+      // 使用 requestAnimationFrame 来优化性能
+      requestAnimationFrame(() => {
+        if (!treeRef.current || !draggedDecoration) return
+        
+        const rect = treeRef.current.getBoundingClientRect()
+        const x = e.clientX - rect.left - dragOffsetRef.current.x
+        const y = e.clientY - rect.top - dragOffsetRef.current.y
+
+        onDecorationUpdate(draggedDecoration, { x, y })
+      })
+    }
   }
 
   const handleMouseUp = () => {
+    // 如果没有移动且正在拖拽某个装饰品，则认为是点击
+    if (!hasMovedRef.current && draggedDecoration) {
+      // 延迟一点时间再触发点击，避免与mouseup冲突
+      setTimeout(() => {
+        if (draggedDecoration) {
+          handleDecorationClick(draggedDecoration)
+        }
+      }, 10)
+    }
+    
     setDraggedDecoration(null)
     isDraggingRef.current = false
+    hasMovedRef.current = false
   }
 
   // 全局鼠标事件监听，确保拖拽的流畅性
@@ -373,10 +402,6 @@ export function ChristmasTree({
               willChange: draggedDecoration === decoration.id ? "transform" : "auto",
             }}
           onMouseDown={(e) => handleDecorationMouseDown(e, decoration.id, decoration.x, decoration.y)}
-          onClick={(e) => {
-            e.stopPropagation()
-            handleDecorationClick(decoration.id, e)
-          }}
         >
           {decoration.type === "emoji" ? (
             <span className="text-4xl pointer-events-none">{decoration.content}</span>
