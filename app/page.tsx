@@ -4,7 +4,6 @@ import { useState, useRef } from "react"
 import { ChristmasTree } from "@/components/christmas-tree"
 import { SnowEffect } from "@/components/snow-effect"
 import { ControlPanel } from "@/components/control-panel"
-import { SettingsPanel } from "@/components/settings-panel"
 import { DecorationPanel } from "@/components/decoration-panel"
 import { Button } from "@/components/ui/button"
 import { Sparkles } from "lucide-react"
@@ -101,20 +100,21 @@ export default function Home() {
               onDecorationRemove={handleDecorationRemove}
               treeRef={treeRef}
             />
-            <SettingsPanel
-              showSnow={showSnow}
-              onShowSnowChange={setShowSnow}
-              showLights={showLights}
-              onShowLightsChange={setShowLights}
-              showTitle={showTitle}
-              onShowTitleChange={setShowTitle}
-              showSubtitle={showSubtitle}
-              onShowSubtitleChange={setShowSubtitle}
-            />
           </div>
           {showDecorationPanel && (
             <div>
-              <DecorationPanel onAddDecoration={handleAddDecoration} treeRef={treeRef} />
+              <DecorationPanel
+                onAddDecoration={handleAddDecoration}
+                treeRef={treeRef}
+                showSnow={showSnow}
+                onShowSnowChange={setShowSnow}
+                showLights={showLights}
+                onShowLightsChange={setShowLights}
+                showTitle={showTitle}
+                onShowTitleChange={setShowTitle}
+                showSubtitle={showSubtitle}
+                onShowSubtitleChange={setShowSubtitle}
+              />
             </div>
           )}
         </div>

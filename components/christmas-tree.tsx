@@ -219,6 +219,10 @@ export function ChristmasTree({
     }
 
     const handleGlobalTouchMove = (e: TouchEvent) => {
+      // 防止页面在移动端拖拽时滚动
+      if (e.cancelable) {
+        e.preventDefault()
+      }
       if (!draggedDecoration || !treeRef.current || !isDraggingRef.current || e.touches.length === 0) return
       const touch = e.touches[0]
       requestAnimationFrame(() => {
@@ -298,7 +302,8 @@ export function ChristmasTree({
   return (
     <div
       ref={treeRef}
-      className="relative w-full max-w-3xl h-[700px] animate-in zoom-in duration-1000 delay-300"
+      className="relative w-full max-w-3xl h-[700px] animate-in zoom-in duration-1000 delay-300 select-none"
+      style={{ touchAction: "none", overscrollBehavior: "contain" }}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}

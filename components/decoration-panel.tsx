@@ -7,10 +7,19 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Upload, Download } from "lucide-react"
 import { toPng } from "html-to-image"
+import { Switch } from "@/components/ui/switch"
 
 interface DecorationPanelProps {
   onAddDecoration: (type: "emoji" | "image", content: string, x?: number, y?: number) => void
   treeRef?: React.RefObject<HTMLDivElement>
+  showSnow: boolean
+  onShowSnowChange: (v: boolean) => void
+  showLights: boolean
+  onShowLightsChange: (v: boolean) => void
+  showTitle: boolean
+  onShowTitleChange: (v: boolean) => void
+  showSubtitle: boolean
+  onShowSubtitleChange: (v: boolean) => void
 }
 
 const PRESET_DECORATIONS = [
@@ -30,7 +39,7 @@ const PRESET_DECORATIONS = [
   { emoji: "⭐", label: "星星" },
 ]
 
-export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelProps) {
+export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnowChange, showLights, onShowLightsChange, showTitle, onShowTitleChange, showSubtitle, onShowSubtitleChange }: DecorationPanelProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -162,6 +171,29 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
           ))}
         </div>
 
+        {/* 设置 */}
+        <div className="space-y-4 border-t border-border pt-4">
+          <h3 className="text-lg font-semibold text-foreground">设置</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">雪花效果</span>
+              <Switch checked={showSnow} onCheckedChange={onShowSnowChange} />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">灯光（彩灯）</span>
+              <Switch checked={showLights} onCheckedChange={onShowLightsChange} />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">标题（圣诞快乐 2025）</span>
+              <Switch checked={showTitle} onCheckedChange={onShowTitleChange} />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">副标题（装饰你的专属圣诞树…）</span>
+              <Switch checked={showSubtitle} onCheckedChange={onShowSubtitleChange} />
+            </div>
+          </div>
+        </div>
+
         {/* 功能按钮 */}
         <div className="space-y-4">
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
@@ -229,6 +261,29 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
             <Download className="w-5 h-5" />
             {isExporting ? "导出中..." : "导出为图片"}
           </Button>
+        </div>
+
+        {/* 设置 */}
+        <div className="space-y-3 border-t border-border pt-4">
+          <h3 className="text-lg font-semibold text-foreground">设置</h3>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm">雪花效果</span>
+              <Switch checked={showSnow} onCheckedChange={onShowSnowChange} />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">灯光（彩灯）</span>
+              <Switch checked={showLights} onCheckedChange={onShowLightsChange} />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">标题（圣诞快乐 2025）</span>
+              <Switch checked={showTitle} onCheckedChange={onShowTitleChange} />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm">副标题（装饰你的专属圣诞树…）</span>
+              <Switch checked={showSubtitle} onCheckedChange={onShowSubtitleChange} />
+            </div>
+          </div>
         </div>
 
         <div className="text-sm text-muted-foreground space-y-1 border-t border-border pt-4">
