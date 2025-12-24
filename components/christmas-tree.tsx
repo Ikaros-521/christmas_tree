@@ -8,12 +8,17 @@ import { DecorationEditor } from "./decoration-editor"
 
 interface Decoration {
   id: string
-  type: "emoji" | "image"
+  type: "emoji" | "image" | "text"
   content: string
   x: number
   y: number
   rotation: number
   scale: number
+  fontFamily?: string
+  fontSize?: number
+  color?: string
+  fontWeight?: string
+  fontStyle?: string
 }
 
 interface ChristmasTreeProps {
@@ -591,6 +596,19 @@ export function ChristmasTree({
         >
           {decoration.type === "emoji" ? (
             <span className="text-4xl pointer-events-none">{decoration.content}</span>
+          ) : decoration.type === "text" ? (
+            <span
+              className="pointer-events-none"
+              style={{
+                fontFamily: decoration.fontFamily || "Arial",
+                fontSize: `${decoration.fontSize || 24}px`,
+                color: decoration.color || "#FF0000",
+                fontWeight: decoration.fontWeight || "normal",
+                fontStyle: decoration.fontStyle || "normal",
+              }}
+            >
+              {decoration.content}
+            </span>
           ) : (
             <img
               src={decoration.content || "/placeholder.svg"}

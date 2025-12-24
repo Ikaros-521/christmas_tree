@@ -10,12 +10,17 @@ import { Sparkles } from "lucide-react"
 
 interface Decoration {
   id: string
-  type: "emoji" | "image"
+  type: "emoji" | "image" | "text"
   content: string
   x: number
   y: number
   rotation: number
   scale: number
+  fontFamily?: string
+  fontSize?: number
+  color?: string
+  fontWeight?: string
+  fontStyle?: string
 }
 
 export default function Home() {
@@ -30,7 +35,7 @@ export default function Home() {
   const [showLights, setShowLights] = useState(true)
   const [treeStyle, setTreeStyle] = useState<"classic" | "snowy" | "minimal" | "pine">("classic")
 
-  const handleAddDecoration = (type: "emoji" | "image", content: string, x?: number, y?: number) => {
+  const handleAddDecoration = (type: "emoji" | "image" | "text", content: string, x?: number, y?: number, options?: any) => {
     const newDecoration: Decoration = {
       id: `decoration-${Date.now()}-${Math.random()}`,
       type,
@@ -39,6 +44,7 @@ export default function Home() {
       y: y || 300,
       rotation: 0,
       scale: 1,
+      ...(options || {}),
     }
     setDecorations([...decorations, newDecoration])
   }

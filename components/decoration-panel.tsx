@@ -5,9 +5,10 @@ import type React from "react"
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Upload, Download } from "lucide-react"
+import { Upload, Download, Type } from "lucide-react"
 import { toPng } from "html-to-image"
 import { Switch } from "@/components/ui/switch"
+import { TextDecorationInput } from "./text-decoration-input"
 import {
   Select,
   SelectContent,
@@ -17,7 +18,7 @@ import {
 } from "@/components/ui/select"
 
 interface DecorationPanelProps {
-  onAddDecoration: (type: "emoji" | "image", content: string, x?: number, y?: number) => void
+  onAddDecoration: (type: "emoji" | "image" | "text", content: string, x?: number, y?: number, options?: any) => void
   treeRef?: React.RefObject<HTMLDivElement>
   showSnow: boolean
   onShowSnowChange: (v: boolean) => void
@@ -52,14 +53,15 @@ export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnow
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isExporting, setIsExporting] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [showTextDecorationInput, setShowTextDecorationInput] = useState(false)
 
-  const handleAddDecoration = (type: "emoji" | "image", content: string) => {
+  const handleAddDecoration = (type: "emoji" | "image" | "text", content: string, options?: any) => {
     // 在圣诞树中心位置附近添加装饰品
     const centerX = 300
     const centerY = 300
     const randomOffset = () => (Math.random() - 0.5) * 100 // 随机偏移 ±50px
     
-    onAddDecoration(type, content, centerX + randomOffset(), centerY + randomOffset())
+    onAddDecoration(type, content, centerX + randomOffset(), centerY + randomOffset(), options)
     setIsMobileMenuOpen(false) // 添加装饰品后关闭移动菜单
   }
 
@@ -73,6 +75,10 @@ export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnow
       handleAddDecoration("image", imageUrl)
     }
     reader.readAsDataURL(file)
+  }
+
+  const handleAddTextDecoration = (text: string, options: any) => {
+    handleAddDecoration("text", text, options)
   }
 
   const handleExport = async () => {
@@ -224,6 +230,15 @@ export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnow
             variant="outline"
             size="lg"
             className="w-full gap-2 bg-transparent"
+            onClick={() => setShowTextDecorationInput(true)}
+          >
+            <Type className="w-5 h-5" />
+            添加文字装饰
+          </Button>
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full gap-2 bg-transparent"
             onClick={() => fileInputRef.current?.click()}
           >
             <Upload className="w-5 h-5" />
@@ -270,6 +285,15 @@ export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnow
 
         <div className="space-y-3">
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full gap-2 bg-transparent"
+            onClick={() => setShowTextDecorationInput(true)}
+          >
+            <Type className="w-5 h-5" />
+            添加文字装饰
+          </Button>
           <Button
             variant="outline"
             size="lg"
@@ -334,6 +358,14 @@ export function DecorationPanel({ onAddDecoration, treeRef, showSnow, onShowSnow
           </ul>
         </div>
       </Card>
+
+      {/* 文字装饰输入框 */}
+      {showTextDecorationInput && (
+        <TextDecorationInput
+          onAddTextDecoration={handleAddTextDecoration}
+          onClose={() => setShowTextDecorationInput(false)}
+        />
+      )}
     </>
   )
 }

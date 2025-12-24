@@ -10,12 +10,17 @@ import { X, RotateCw, ZoomIn, Trash2 } from "lucide-react"
 
 interface Decoration {
   id: string
-  type: "emoji" | "image"
+  type: "emoji" | "image" | "text"
   content: string
   x: number
   y: number
   rotation: number
   scale: number
+  fontFamily?: string
+  fontSize?: number
+  color?: string
+  fontWeight?: string
+  fontStyle?: string
 }
 
 interface DecorationEditorProps {
@@ -33,6 +38,12 @@ export function DecorationEditor({
 }: DecorationEditorProps) {
   const [rotation, setRotation] = useState(decoration.rotation)
   const [scale, setScale] = useState(decoration.scale)
+  const [text, setText] = useState(decoration.content)
+  const [fontFamily, setFontFamily] = useState(decoration.fontFamily || "Arial")
+  const [fontSize, setFontSize] = useState(decoration.fontSize || 24)
+  const [color, setColor] = useState(decoration.color || "#FF0000")
+  const [fontWeight, setFontWeight] = useState(decoration.fontWeight || "normal")
+  const [fontStyle, setFontStyle] = useState(decoration.fontStyle || "normal")
 
   const handleRotationChange = (value: number[]) => {
     const newRotation = value[0]
@@ -65,10 +76,10 @@ export function DecorationEditor({
 
   return (
     <Card 
-      className="absolute z-40 p-4 bg-card/95 backdrop-blur-sm border-2 shadow-lg min-w-[280px]"
+      className="absolute z-40 p-4 bg-card/95 backdrop-blur-sm border-2 shadow-lg min-w-[450px] max-w-[500px]"
       style={{
-        left: `${Math.min(Math.max(20, decoration.x + 20), 400)}px`,
-        top: `${Math.min(Math.max(20, decoration.y + 20), 400)}px`,
+        left: `${Math.min(Math.max(20, decoration.x + 20), 300)}px`,
+        top: `${Math.min(Math.max(20, decoration.y + 20), 300)}px`,
       }}
       onClick={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
@@ -86,7 +97,7 @@ export function DecorationEditor({
       </div>
 
       {/* 预览装饰物 */}
-      <div className="flex justify-center mb-4 p-3 bg-muted/30 rounded-lg">
+      <div className="flex justify-center mb-4 p-3 bg-muted/30 rounded-lg min-h-[80px] flex items-center">
         <div
           className="transition-all duration-300"
           style={{
@@ -95,6 +106,18 @@ export function DecorationEditor({
         >
           {decoration.type === "emoji" ? (
             <span className="text-4xl">{decoration.content}</span>
+          ) : decoration.type === "text" ? (
+            <span
+              style={{
+                fontFamily,
+                fontSize: `${fontSize}px`,
+                color,
+                fontWeight,
+                fontStyle,
+              }}
+            >
+              {text}
+            </span>
           ) : (
             <img
               src={decoration.content || "/placeholder.svg"}
@@ -188,6 +211,144 @@ export function DecorationEditor({
           </Button>
         </div>
       </div>
+
+      {/* 文字装饰专用控制 */}
+      {decoration.type === "text" && (
+        <div className="space-y-4 mt-4 pt-3 border-t">
+          {/* 第一行：文字内容和字体大小 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">文字内容</label>
+              <input
+                type="text"
+                value={text}
+                onChange={(e) => {
+                  const newText = e.target.value
+                  setText(newText)
+                  onUpdate(decoration.id, { content: newText })
+                }}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm"
+                maxLength={20}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">字体大小: {fontSize}px</label>
+              <input
+                type="range"
+                min="12"
+                max="72"
+                value={fontSize}
+                onChange={(e) => {
+                  const newSize = Number(e.target.value)
+                  setFontSize(newSize)
+                  onUpdate(decoration.id, { fontSize: newSize })
+                }}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+          </div>
+
+          {/* 第二行：字体和字体粗细 */}
+          <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">字体</label>
+              <select
+                value={fontFamily}
+                onChange={(e) => {
+                  const newFont = e.target.value
+                  setFontFamily(newFont)
+                  onUpdate(decoration.id, { fontFamily: newFont })
+                }}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm"
+              >
+                <option value="Arial">Arial</option>
+                <option value="Times New Roman">Times New Roman</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Comic Sans MS">Comic Sans MS</option>
+                <option value="Impact">Impact</option>
+                <option value="Trebuchet MS">Trebuchet MS</option>
+              </select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">粗细</label>
+              <select
+                value={fontWeight}
+                onChange={(e) => {
+                  const newWeight = e.target.value
+                  setFontWeight(newWeight)
+                  onUpdate(decoration.id, { fontWeight: newWeight })
+                }}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm"
+              >
+                <option value="normal">正常</option>
+                <option value="bold">粗体</option>
+                <option value="lighter">细体</option>
+              </select>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">样式</label>
+              <select
+                value={fontStyle}
+                onChange={(e) => {
+                  const newStyle = e.target.value
+                  setFontStyle(newStyle)
+                  onUpdate(decoration.id, { fontStyle: newStyle })
+                }}
+                className="w-full px-3 py-2 border border-border rounded-md bg-background text-sm"
+              >
+                <option value="normal">正常</option>
+                <option value="italic">斜体</option>
+              </select>
+            </div>
+          </div>
+
+          {/* 第三行：颜色选择 */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">文字颜色</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => {
+                  const newColor = e.target.value
+                  setColor(newColor)
+                  onUpdate(decoration.id, { color: newColor })
+                }}
+                className="w-10 h-10 p-1 border rounded cursor-pointer"
+              />
+              <input
+                type="text"
+                value={color}
+                onChange={(e) => {
+                  const newColor = e.target.value
+                  setColor(newColor)
+                  onUpdate(decoration.id, { color: newColor })
+                }}
+                className="flex-1 px-3 py-2 border border-border rounded-md bg-background text-sm"
+              />
+              <div className="flex gap-1 flex-wrap">
+                {["#000000", "#FFFFFF", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"].map((presetColor) => (
+                  <button
+                    key={presetColor}
+                    onClick={() => {
+                      setColor(presetColor)
+                      onUpdate(decoration.id, { color: presetColor })
+                    }}
+                    className="w-6 h-6 rounded border-2 border-gray-300 hover:border-gray-400 transition-colors"
+                    style={{ backgroundColor: presetColor }}
+                    title={presetColor}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 删除按钮 */}
       <div className="mt-4 pt-3 border-t">
