@@ -72,39 +72,30 @@ export default function Home() {
 
         <div className="grid lg:grid-cols-[1fr_400px] gap-8 items-start">
           <div className="flex flex-col items-center gap-6">
-            <div ref={treeRef}>
-              <ChristmasTree
-                lightColor={lightColor}
-                isPlaying={isPlaying}
-                decorations={decorations}
-                onDecorationUpdate={handleDecorationUpdate}
-                onDecorationRemove={handleDecorationRemove}
-              />
-            </div>
-
-            <ControlPanel
+            <ChristmasTree
               lightColor={lightColor}
-              onLightColorChange={setLightColor}
-              showSnow={showSnow}
-              onShowSnowChange={setShowSnow}
               isPlaying={isPlaying}
-              onPlayingChange={setIsPlaying}
+              decorations={decorations}
+              onDecorationUpdate={handleDecorationUpdate}
+              onDecorationRemove={handleDecorationRemove}
             />
-
-            <Button
-              variant="outline"
-              size="lg"
-              className="gap-2 bg-card/50 backdrop-blur-sm border-primary/50 hover:border-primary transition-all hover:scale-105"
-              onClick={handleReset}
-            >
-              <Sparkles className="w-5 h-5" />
-              重置圣诞树
-            </Button>
           </div>
 
-          <div className="lg:sticky lg:top-8">
+          <div className="hidden lg:block">
             <DecorationPanel onAddDecoration={handleAddDecoration} treeRef={treeRef} />
           </div>
+        </div>
+
+        <div className="flex justify-center mt-8">
+          <Button
+            variant="outline"
+            size="lg"
+            className="gap-2 bg-card/50 backdrop-blur-sm border-primary/50 hover:scale-105 transition-all hover:border-primary/70"
+            onClick={handleReset}
+          >
+            <Sparkles className="w-5 h-5" />
+            重置圣诞树
+          </Button>
         </div>
       </div>
     </main>
