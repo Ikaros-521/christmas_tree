@@ -60,16 +60,44 @@ export function DecorationPanel({ onAddDecoration, treeRef }: DecorationPanelPro
 
     setIsExporting(true)
     try {
+      // 使用 html2canvas 进行真实的圣诞树截图
       const canvas = await html2canvas(treeRef.current, {
-        backgroundColor: null,
+        backgroundColor: '#ffffff',
         scale: 2,
         logging: false,
+        useCORS: true,
+        allowTaint: true,
+        // 忽略可能导致颜色解析问题的元素
+        ignoreElements: ['style', 'script'] as any,
+        onclone: (clonedDoc: Document) => {
+          // 简化所有背景色为简单格式
+          const walker = document.createTreeWalker(
+            clonedDoc,
+            NodeFilter.SHOW_ELEMENT,
+            null,
+            false
+          )
+          
+          let node
+          while (node = walker.nextNode()) {
+            if (node instanceof HTMLElement) {
+              const computedStyle = window.getComputedStyle(node)
+              const bgColor = computedStyle.backgroundColor
+              if (bgColor && (bgColor.includes('oklch(') || bgColor.includes('lab('))) {
+                node.style.backgroundColor = '#ffffff'
+              }
+            }
+          }
+          
+          return clonedDoc
+        },
       })
 
-      const link = document.createElement("a")
+      const link = document.createElement('a')
       link.download = `my-christmas-tree-${Date.now()}.png`
-      link.href = canvas.toDataURL("image/png")
+      link.href = canvas.toDataURL('image/png')
       link.click()
+      
     } catch (error) {
       console.error("Export failed:", error)
     } finally {
