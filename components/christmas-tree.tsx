@@ -18,6 +18,7 @@ interface Decoration {
 
 interface ChristmasTreeProps {
   lightColor: "rainbow" | "warm" | "cool"
+  showLights: boolean
   isPlaying: boolean
   decorations: Decoration[]
   onDecorationUpdate: (id: string, updates: Partial<Decoration>) => void
@@ -27,6 +28,7 @@ interface ChristmasTreeProps {
 
 export function ChristmasTree({
   lightColor,
+  showLights,
   isPlaying,
   decorations,
   onDecorationUpdate,
@@ -434,7 +436,7 @@ export function ChristmasTree({
         </div>
       </div>
 
-      {ornaments.map((ornament, index) => {
+      {showLights && ornaments.map((ornament, index) => {
         const color = getLightColor(index)
         const isClicked = clickedOrnaments.has(index)
 

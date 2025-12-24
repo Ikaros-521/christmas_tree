@@ -4,6 +4,7 @@ import { useState, useRef } from "react"
 import { ChristmasTree } from "@/components/christmas-tree"
 import { SnowEffect } from "@/components/snow-effect"
 import { ControlPanel } from "@/components/control-panel"
+import { SettingsPanel } from "@/components/settings-panel"
 import { DecorationPanel } from "@/components/decoration-panel"
 import { Button } from "@/components/ui/button"
 import { Sparkles } from "lucide-react"
@@ -25,6 +26,9 @@ export default function Home() {
   const [decorations, setDecorations] = useState<Decoration[]>([])
   const [showDecorationPanel, setShowDecorationPanel] = useState(true)
   const treeRef = useRef<HTMLDivElement>(null)
+  const [showTitle, setShowTitle] = useState(true)
+  const [showSubtitle, setShowSubtitle] = useState(true)
+  const [showLights, setShowLights] = useState(true)
 
   const handleAddDecoration = (type: "emoji" | "image", content: string, x?: number, y?: number) => {
     const newDecoration: Decoration = {
@@ -74,23 +78,38 @@ export default function Home() {
           </Button>
         </div>
         <div className="text-center mb-8 space-y-4">
-          <h1 className="text-5xl md:text-7xl font-bold text-balance bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent animate-in fade-in slide-in-from-top duration-1000">
-            圣诞快乐 2025
-          </h1>
-          <p className="text-lg md:text-xl text-muted-foreground animate-in fade-in slide-in-from-top duration-1000 delay-200">
-            装饰你的专属圣诞树，创造属于你的圣诞回忆
-          </p>
+          {showTitle && (
+            <h1 className="text-5xl md:text-7xl font-bold text-balance bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent animate-in fade-in slide-in-from-top duration-1000">
+              圣诞快乐 2025
+            </h1>
+          )}
+          {showSubtitle && (
+            <p className="text-lg md:text-xl text-muted-foreground animate-in fade-in slide-in-from-top duration-1000 delay-200">
+              装饰你的专属圣诞树，创造属于你的圣诞回忆
+            </p>
+          )}
         </div>
 
         <div className={`grid gap-8 items-start ${showDecorationPanel ? "lg:grid-cols-[1fr_400px]" : "lg:grid-cols-1"}`}>
           <div className="flex flex-col items-center gap-6">
             <ChristmasTree
               lightColor={lightColor}
+              showLights={showLights}
               isPlaying={isPlaying}
               decorations={decorations}
               onDecorationUpdate={handleDecorationUpdate}
               onDecorationRemove={handleDecorationRemove}
               treeRef={treeRef}
+            />
+            <SettingsPanel
+              showSnow={showSnow}
+              onShowSnowChange={setShowSnow}
+              showLights={showLights}
+              onShowLightsChange={setShowLights}
+              showTitle={showTitle}
+              onShowTitleChange={setShowTitle}
+              showSubtitle={showSubtitle}
+              onShowSubtitleChange={setShowSubtitle}
             />
           </div>
           {showDecorationPanel && (
