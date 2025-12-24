@@ -23,6 +23,7 @@ export default function Home() {
   const [showSnow, setShowSnow] = useState(true)
   const [isPlaying, setIsPlaying] = useState(true)
   const [decorations, setDecorations] = useState<Decoration[]>([])
+  const [showDecorationPanel, setShowDecorationPanel] = useState(true)
   const treeRef = useRef<HTMLDivElement>(null)
 
   const handleAddDecoration = (type: "emoji" | "image", content: string, x?: number, y?: number) => {
@@ -61,6 +62,17 @@ export default function Home() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_var(--tw-gradient-stops))] from-amber-900/20 via-transparent to-transparent" />
 
       <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* 桌面端装饰面板显隐切换 */}
+        <div className="hidden lg:block fixed top-4 right-4 z-50">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowDecorationPanel((prev) => !prev)}
+            className="bg-card/90 backdrop-blur-sm border-border"
+          >
+            {showDecorationPanel ? "隐藏装饰面板" : "显示装饰面板"}
+          </Button>
+        </div>
         <div className="text-center mb-8 space-y-4">
           <h1 className="text-5xl md:text-7xl font-bold text-balance bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent animate-in fade-in slide-in-from-top duration-1000">
             圣诞快乐 2025
@@ -70,7 +82,7 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_400px] gap-8 items-start">
+        <div className={`grid gap-8 items-start ${showDecorationPanel ? "lg:grid-cols-[1fr_400px]" : "lg:grid-cols-1"}`}>
           <div className="flex flex-col items-center gap-6">
             <ChristmasTree
               lightColor={lightColor}
@@ -80,10 +92,11 @@ export default function Home() {
               onDecorationRemove={handleDecorationRemove}
             />
           </div>
-
-          <div className="hidden lg:block">
-            <DecorationPanel onAddDecoration={handleAddDecoration} treeRef={treeRef} />
-          </div>
+          {showDecorationPanel && (
+            <div>
+              <DecorationPanel onAddDecoration={handleAddDecoration} treeRef={treeRef} />
+            </div>
+          )}
         </div>
 
         <div className="flex justify-center mt-8">
