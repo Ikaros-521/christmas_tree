@@ -222,11 +222,16 @@ export function TextDecorationInput({
               <span
                 style={{
                   fontFamily,
-                  fontSize: `${fontSize}px`,
+                  fontSize: `${Math.min(fontSize, 48)}px`, // 限制最大字体大小
                   color,
                   fontWeight,
                   fontStyle,
                   transform: `scale(0.8)`,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  maxWidth: '200px',
+                  display: 'inline-block',
                 }}
               >
                 {text || "预览文字"}
